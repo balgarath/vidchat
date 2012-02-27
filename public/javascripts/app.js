@@ -12,7 +12,7 @@
     var video = document.getElementById('monitor')
       , canvas = document.getElementById('capture')
       , receive = document.getElementById('receive')
-      , filter = new Worker('/javascripts/filters/edge.js');
+      , filter = new Worker('/javascripts/filters/edge.js')
 
     socket.emit('hello', { hello: 'world' });
     socket.on('capture', function(data) {
@@ -26,16 +26,17 @@
         
     navigator.webkitGetUserMedia('video audio', function(stream) {
       video.src = webkitURL.createObjectURL(stream);
+      receive.src = webkitURL.createObjectURL(stream);
       video.addEventListener('error', function () {
         stream.stop();
       });
     });
     
     $(video).on('timeupdate', function(e) {
-      var ctx = canvas.getContext('2d');
-      
-      ctx.drawImage(video, 0, 0);
-      filter.postMessage(Array.prototype.slice.call(ctx.getImageData(0, 0, 320, 240).data, 0));
+      //var ctx = canvas.getContext('2d');
+      socket.emit('capture', video)
+      //ctx.drawImage(video, 0, 0);
+      //filter.postMessage(Array.prototype.slice.call(ctx.getImageData(0, 0, 320, 240).data, 0));
     });
     
     filter.addEventListener('message', function(e) {
@@ -48,7 +49,7 @@
       }
       
       ctx.putImageData(imageData, 0, 0);
-      socket.emit('capture', canvas.toDataURL());
+      //socket.emit('capture', canvas.toDataURL());
     });
   });
   
